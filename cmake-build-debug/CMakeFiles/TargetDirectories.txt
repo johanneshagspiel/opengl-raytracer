@@ -1,0 +1,3 @@
+/home/osheasha/Desktop/cse2215-raytracing-projectv5/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/osheasha/Desktop/cse2215-raytracing-projectv5/cmake-build-debug/CMakeFiles/raytracing.dir
+/home/osheasha/Desktop/cse2215-raytracing-projectv5/cmake-build-debug/CMakeFiles/edit_cache.dir
