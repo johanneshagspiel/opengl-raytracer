@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\Johannes\Desktop\New folder\test3\CGProject31\x64\Release\raytracing.exe</FullPath>
+      <FullPath>C:\Users\Johannes\Desktop\programs\university_projects\opengl-raytracer\x64\Release\raytracing.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
