@@ -71,17 +71,6 @@ void Flyscene::initialize(int width, int height) {
 
     camSpeed = 1;
 
-    // for (int i = 0; i<mesh.getNumberOfFaces(); ++i){
-    //   Tucano::Face face = mesh.getFace(i);
-    //   for (int j =0; j<face.vertex_ids.size(); ++j){
-    //     std::cout<<"vid "<<j<<" "<<face.vertex_ids[j]<<std::endl;
-    //     std::cout<<"vertex "<<mesh.getVertex(face.vertex_ids[j]).transpose()<<std::endl;
-    //     std::cout<<"normal "<<mesh.getNormal(face.vertex_ids[j]).transpose()<<std::endl;
-    //   }
-    //   std::cout<<"mat id "<<face.material_id<<std::endl<<std::endl;
-    //   std::cout<<"face   normal "<<face.normal.transpose() << std::endl << std::endl;
-    // }
-
 }
 
 void Flyscene::paintGL(void) {
@@ -200,45 +189,6 @@ void Flyscene::raytraceScene(int width, int height) {
         }
     }
     printf("\n");
-
-    /*
-    // DOESNT WORK WHY?
-    //src = https://medium.com/@phostershop/solving-multithreaded-raytracing-issues-with-c-11-7f018ecd76fa
-    std::size_t max = image_size[0] * image_size[1];
-    std::cout << "maxx"<<max;
-    volatile std::atomic<std::size_t> curr_pixel(0);
-    std::size_t cores = std::thread::hardware_concurrency();
-    volatile std::atomic<std::size_t> count(0);
-    std::cout << "count" << count;
-    std::vector<std::future<void>> future_vector;
-    while (cores--) {
-        future_vector.emplace_back(
-            std::async([=,&image_size, &count, &origin, &screen_coords, &boxes, &boxbounds,&pixel_data]() mutable
-                {
-                    while (true)
-                    {
-                        std::size_t index = count++;
-
-                        if (index >= max)
-                            break;
-                        std::size_t i = index % image_size[1];
-                        std::size_t j = index / image_size[1];
-
-                        std::cout << "index " << index << std::endl;
-
-
-                        // create a ray from the camera passing through the pixel (i,j)
-                        auto screen_coords = flycamera.screenToWorld(Eigen::Vector2f(i, j));
-                        // launch raytracing for the given ray and write result to pixel data
-                        pixel_data[i][j] = traceRay(origin, screen_coords, boxes, boxbounds);
-                    }
-
-
-                }));
-
-    }
-
-    */
 
     // write the ray tracing result to a PPM image
 	raysSend = image_size[0] * image_size[1];
@@ -697,27 +647,6 @@ auto Flyscene::intersect(Eigen::Vector3f start, Eigen::Vector3f to, Tucano::Mesh
     std::vector<HitData> lolz;
     std::vector<HitData> hits;
 
-    /*
-    for (int i = 0; i < mesh.getNumberOfFaces(); i++) {
-        auto result = intersectTriange(start, to, mesh.getFace(i), mesh);
-        if (result.inter) {
-            HitData hit;
-            hit.face = result.face;
-            hit.hit = result.hit;
-            hits.push_back(hit);
-            hits.push_back(hit);
-            std::cout << "we are at face " << i << std::endl;
-        }
-    }
-    */
-    //INTERSECT CUBE HERE
-    //bool sphere_intersection = Flyscene::intersectSphere(start, to, center, sphere_r);
-    /*
-        if (!sphere_intersection) {
-        return result{ false, mesh.getFace(0), Eigen::Vector3f(Eigen::Vector3f(0, 0, 0)) };
-    }
-    */
-
 
     hits = intersectBox(start, to, boxes, boxbounds, 0, mesh, lolz);
 	interceptions = interceptions + hits.size();
@@ -762,40 +691,14 @@ Eigen::Vector3f reflect(const Eigen::Vector3f I, const Eigen::Vector3f N) {
 
 
 
-/* NOTE: whoever will implement hard shadow from a point, you need to check in the 2nd for loop, whether there is a face
- * between the light source and your current object. if so, you'll be in a shadow, otherwise, you're directly illuminated
-Eigen::Vector3f directIllumination(const Eigen::Vector3f &I, const Eigen::Vector3f &N, std::vector<Eigen::Vector3f> lights,
-                   Tucano::Mesh mesh) {
-    std::vector<Eigen::Vector3f> lightvecs;
-    for (int i = 0; i < lights.size(); i++) {
-        Eigen::Vector3f current = (lights[i] - I);
-        current = current.normalized();
-        lightvecs.push_back(current);
-    }
-    for (int i = 0; i < lightvecs.size(); i++) {
-        if (intersect(I, lightvecs[i], mesh).size() == 0) {
-
-            float attenuation = 1 / (*dist);
-            return lightColor * dot(N, L) * attenuation;
-
-        }
-    }
-    if (!IsVisibile(I, L, dist)) return BLACK;
-
-}
-*/
-
 Eigen::Vector3f Flyscene::shade(int level, Eigen::Vector3f hit, Eigen::Vector3f from, Tucano::Face face, Tucano::Mesh mesh,
                                 Tucano::Effects::PhongMaterial phong, std::vector<Eigen::Vector4f> lights,
                                 std::vector<std::vector<Tucano::Face>> boxes, std::vector<std::vector<Eigen::Vector3f>> boxbounds,
                                 Eigen::Vector3f light_intensity, Eigen::Vector3f center, float  sphere_r, bool allowSoftShadows) {
 
-//    printf("\nshade\n");
 
     int finesse = 20; // Finesse of soft shadows. the higher the better detail and lower performance (quadratically)
 
-//    std::vector<Eigen::Vector3f> light_directions;
-//    std::vector<Eigen::Vector3f> reflected_lights;
 
     Eigen::Vector3f normal3 = face.normal.normalized();
 
@@ -826,16 +729,10 @@ Eigen::Vector3f Flyscene::shade(int level, Eigen::Vector3f hit, Eigen::Vector3f 
     Eigen::Vector3f color = Eigen::Vector3f(0, 0, 0);
 
     for (int i = 0; i < lights.size(); i++) {
-//        printf("--light-%d\n", i);
+
         Eigen::Vector3f normalToLight = (lights[i].head<3>() - hit).normalized();
 
         /// 0) compute the light direction
-//        float d = sqrt((pow((lights[i].x() - hit.x()), 2) + pow((lights[i].y() - hit.y()), 2) + pow((lights[i].z() - hit.z()), 2)));
-////        std::cout << "light multipiler " << 1/d << std::endl;
-//
-//        Eigen::Vector3f light_intensityD = (1/d) * light_intensity;
-
-//        light_directions.push_back(normalToLight);
 
         /// generate points on spehere light source
         std::vector<Eigen::Vector3f> lightPoints;
@@ -868,15 +765,13 @@ Eigen::Vector3f Flyscene::shade(int level, Eigen::Vector3f hit, Eigen::Vector3f 
             //std::cout << "INTERSECTTTTTTTT " << intersection.inter << std::endl;
             if (!intersection.inter) {
                 hitCount += 1;
-//                printf("------reached\n");
+
             }else{
-//                printf("------missed\n");
-//                printf("------from (x%6.2f y%6.2f z%6.2f)", hit.x(), hit.y(), hit.z() );
-//                printf("------found(x%6.2f y%6.2f z%6.2f)", intersection.hit.x(), intersection.hit.y(), intersection.hit.z() );
+
             }
         }
 
-//        printf("----hitCount:%d\n", hitCount);
+
         if(hitCount > 0){
             /// 3) compute ambient, diffuse and specular components
             Eigen::Vector3f A = light_intensity.array() * ka.array();
@@ -885,7 +780,7 @@ Eigen::Vector3f Flyscene::shade(int level, Eigen::Vector3f hit, Eigen::Vector3f 
             Eigen::Vector3f D = light_intensity.array() * kd.array() * cosss;
 
             // reflected https://stackoverflow.com/questions/24132774/trouble-with-phong-shading
-//            Eigen::Vector3f l = -normalToLight;
+
             Eigen::Vector3f r = (2 * cosss * normal3) - normalToLight;
             r = r.normalized();
             float coss = eye_vec3.dot(r);
@@ -894,19 +789,10 @@ Eigen::Vector3f Flyscene::shade(int level, Eigen::Vector3f hit, Eigen::Vector3f 
 
             /// 4) compute final color using the Phong Model
             color = color + (A + D + S)*(1.0*hitCount/lightPoints.size());
-//            printf("A(%6.2f|%6.2f|%6.2f)\n", A.x(), A.y(), A.z());
-//            printf("D(%6.2f|%6.2f|%6.2f)\n", D.x(), D.y(), D.z());
-//            printf("S(%6.2f|%6.2f|%6.2f)\n", S.x(), S.y(), S.z());
-//            printf("%f\n", (1.0*hitCount/lightPoints.size()));
         }
     }
 
     Eigen::Vector3f avgColor = color / lights.size();
-
-    // THIS PART IS UNKNOWN WHEN SURE PUT IT BEFORE RETURN
-    // I am not even sgure if this part must be here or not
-    // THIS PART I dont know but it should look something along the lines od this
-    //need to implement with level
 
     //reflection
     Eigen::Vector3f reflection = reflect(from, normal3);
@@ -929,12 +815,10 @@ Eigen::Vector3f Flyscene::shade(int level, Eigen::Vector3f hit, Eigen::Vector3f 
 
     Eigen::Vector3f refraction = refract(from, normal3, air, material);
     Eigen::Vector3f refractioncolor = Eigen::Vector3f(0, 0, 0);
-    //WE NEED A MATERIAL PROPERTY
     if (level > 0) {
         refractioncolor = recursiveraytracing(level - 1, hit, refraction, mesh, phong, lights, boxes, boxbounds, true, center , sphere_r);
     }
 
-//    return (avgColor + reflectioncolor + refractioncolor)/3;
     return color + reflectioncolor + refractioncolor;
 }
 
@@ -953,11 +837,9 @@ Eigen::Vector3f Flyscene::recursiveraytracing(int level, Eigen::Vector3f start, 
         return Eigen::Vector3f(0, 0, 0);
     }
 
-    // if level is not 0 it should do the method agtain ?? we never do that here
-
     return shade(level, intersection.hit, intersection.hit - start, intersection.face,
                  mesh, phong, lights, boxes, boxbounds, Eigen::Vector3f(1, 1, 1), center,
-                 sphere_r, true); //either return just the color or after the shading
+                 sphere_r, true);
 }
 
 
@@ -1027,8 +909,6 @@ void Flyscene::createDebugRay(const Eigen::Vector2f &mouse_pos, Eigen::Vector3f 
 		reflection_rays[n].resetModelMatrix();
 		refraction_rays[n].resetModelMatrix();
 
-		//reflection
-		//std::cout << "hit data " << intersection.hit << std::endl;
 		if (n == 0) {
 			ray.setSize(0.005, distance(flycamera.getCenter(), intersection.hit));
 		}
@@ -1045,17 +925,12 @@ void Flyscene::createDebugRay(const Eigen::Vector2f &mouse_pos, Eigen::Vector3f 
 		Eigen::Vector4f color4 = Eigen::Vector4f(color3.x(), color3.y(), color3.z(), 1);
 
 		reflection_rays[n].setColor(color4);
-		//std::cout << "COLOR " << color4 << std::endl;
 
 		
 		int material_id;
 		float material;
 		(intersection.face.material_id < 0) ? material = 0.9 : material = materials[intersection.face.material_id].getOpticalDensity();
-		// src = your slights
 		float air = 1.0;
-		
-
-		//std::cout << "MATERIAL "<< material << std::endl;
 		
 		Eigen::Vector3f refraction = refract(to, facenorm, air, material);
 		float a =  distance(start, intersection.hit);
