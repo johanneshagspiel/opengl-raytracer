@@ -1,4 +1,4 @@
-<img src=resources/logo/opengl_raytracer_logo.png alt="OpenGL Raytracer" width="507" height="216">
+<img src=img/opengl_raytracer_logo.png alt="OpenGL Raytracer" width="507" height="216">
 
 --------------------------------------------------------------------------------
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/johanneshagspiel/opengl-raytracer/LICENSE.md)
