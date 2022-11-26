@@ -43,7 +43,7 @@ It is assumed that the users is using Windows.
 
 This raytracer was created together with:
 
-- [Marko Matušovič](https://github.com/MMarko333)
+- Marko Matušovič
 - [Emre Ozkan](https://github.com/emre6943)
 - [Omar Sheasha](https://github.com/osheasha)
 - [Stef Rasing](https://github.com/stefstef00)
